@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Add Service{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Add New Service</h2>
+        <form method="POST" action="{{ url_for('add_service') }}">
+            <div class="mb-3">
+                <label for="title" class="form-label">Service Title</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="category" class="form-label">Category</label>
+                <select class="form-select" id="category" name="category" required>
+                    <option value="Food">Food Services</option>
+                    <option value="Auto Service">Auto Services</option>
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="HVAC">HVAC</option>
+                    <option value="Roofing">Roofing</option>
+                    <option value="Gardening">Gardening</option>
+                    <option value="Home Improvement">Home Improvement</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Service</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

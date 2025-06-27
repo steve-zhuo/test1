@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Search Services{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="search-container">
+                <div class="search-box">
+                    <div class="input-with-icon">
+                        <input type="text" class="search-input" placeholder="Search for services..." aria-label="Search">
+                        <div class="search-icon">
+                            <div class="search-icon-container">
+                                <i class="fas fa-search"></i>
+                                <div class="search-icon-glow"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="search-suggestions">
+                        <div class="suggestion-item">
+                            <i class="fas fa-car"></i>
+                            <span>Auto Services</span>
+                        </div>
+                        <div class="suggestion-item">
+                            <i class="fas fa-home"></i>
+                            <span>Home Services</span>
+                        </div>
+                        <div class="suggestion-item">
+                            <i class="fas fa-tools"></i>
+                            <span>Repairs & Maintenance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="searchResults" class="mt-4"></div>
+
+    <script>
+    $(document).ready(function() {
+        $('.search-input').on('input', function() {
+            const query = $(this).val();
+            
+            if (query.length >= 2) {
+                $.ajax({
+                    url: '/search',
+                    method: 'GET',
+                    data: { q: query },
+                    success: function(data) {
+                        displayResults(data);
+                    }
+                });
+            } else {
+                $('#searchResults').html('');
+            }
+        });
+
+        function displayResults(results) {
+            let html = '';
+            if (results.length === 0) {
+                html = '<div class="alert alert-info">No results found.</div>';
+            } else {
+                // Group exact matches first
+                const exactMatches = results.filter(service => service.is_exact_match);
+                const otherMatches = results.filter(service => !service.is_exact_match);
+
+                if (exactMatches.length > 0) {
+                    html += '<div class="search-results">';
+                    html += '<h4 class="mt-4">Exact Matches</h4>';
+                    exactMatches.forEach(service => {
+                        html += `
+                            <div class="result-item card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">${service.title}</h5>
+                                    <p class="card-text">${service.description}</p>
+                                    <p class="card-text"><small class="text-muted">Category: ${service.category}</small></p>
+                                    <p class="card-text"><small class="text-muted">Posted by ${service.provider.username}</small></p>
+                                    <a href="/service/${service.id}" class="btn btn-primary">View Details</a>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                if (otherMatches.length > 0) {
+                    html += '<div class="search-results">';
+                    html += '<h4 class="mt-4">Other Matches</h4>';
+                    otherMatches.forEach(service => {
+                        html += `
+                            <div class="result-item card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">${service.title}</h5>
+                                    <p class="card-text">${service.description}</p>
+                                    <p class="card-text"><small class="text-muted">Category: ${service.category}</small></p>
+                                    <p class="card-text"><small class="text-muted">Posted by ${service.provider.username}</small></p>
+                                    <a href="/service/${service.id}" class="btn btn-primary">View Details</a>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+            }
+            $('#searchResults').html(html);
+        }
+    });
+    </script>
+
+    <style>
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .search-box {
+        position: relative;
+        background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+        border-radius: 30px;
+        padding: 12px;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+
+    .search-box:hover {
+        box-shadow: 0 8px 35px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .input-with-icon {
+        position: relative;
+        width: 100%;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 50px 12px 15px;
+        border: none;
+        background: transparent;
+        font-size: 1.1rem;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+
+    .search-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .search-icon-container {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+
+    .search-icon-container:hover {
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .search-icon-glow {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: radial-gradient(circle at center, rgba(0,123,255,0.2) 0%, rgba(0,123,255,0) 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .search-icon-container:hover .search-icon-glow {
+        opacity: 1;
+    }
+
+    .search-icon i {
+        color: #007bff;
+        font-size: 1.2rem;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 60px 12px 15px;
+        border: none;
+        background: transparent;
+        font-size: 1.1rem;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        box-shadow: none;
+        color: #007bff;
+    }
+
+    .search-suggestions {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        padding: 10px 0;
+        display: none;
+        z-index: 10;
+    }
+
+    .search-input:focus ~ .search-suggestions {
+        display: block;
+    }
+
+    .search-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .search-icon-container {
+        width: 40px;
+        height: 40px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+
+    .search-icon-container:hover {
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .suggestion-item:hover {
+        background: #f8f9fa;
+    }
+
+    .suggestion-item i {
+        margin-right: 10px;
+        color: #007bff;
+        font-size: 1.2rem;
+    }
+
+    .suggestion-item span {
+        color: #333;
+        font-size: 0.95rem;
+    }
+
+
+
+    .search-results {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
+        margin-top: 1rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .result-item {
+        background: #f8f9fa;
+        border: none;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .result-item:hover {
+        background: white;
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .result-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .result-item .card-body {
+        padding: 1rem;
+    }
+
+    .result-item .card-title {
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+    .result-item .card-text {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .result-item .btn-primary {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 20px;
+    }
+
+    .search-results h4 {
+        color: #007bff;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    </style>
+</div>
+
+<style>
+.search-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-input {
+    padding: 1rem;
+    font-size: 1.2rem;
+    border-radius: 25px 0 0 25px;
+}
+
+.search-input:focus {
+    box-shadow: none;
+    border-color: #007bff;
+}
+
+#searchButton {
+    border-radius: 0 25px 25px 0;
+    background-color: #007bff;
+    border: none;
+    padding: 1rem;
+}
+
+#searchButton:hover {
+    background-color: #0056b3;
+}
+
+.search-results {
+    background: white;
+    padding: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.result-item {
+    transition: transform 0.2s;
+}
+
+.result-item:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}
