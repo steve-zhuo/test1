@@ -4,66 +4,6 @@
 
 {% block styles %}
 <style>
-.category-card {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1rem;
-    border-radius: 8px;
-    background: transparent;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    min-width: 160px;
-    max-width: 240px;
-    box-shadow: none;
-    flex: 0 0 auto;
-    white-space: nowrap;
-}
-
-.category-card i {
-    font-size: 1.75rem;
-    transition: transform 0.3s ease;
-    flex-shrink: 0;
-}
-
-.category-card span {
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: #495057;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.category-card:hover {
-    background: rgba(13, 110, 253, 0.05);
-    transform: translateY(-2px);
-    border: none;
-}
-
-.category-card:hover i {
-    transform: scale(1.1);
-}
-
-.category-card.active {
-    background: rgba(13, 110, 253, 0.1);
-    color: #0d6efd;
-    border: none;
-}
-
-.category-card.active i {
-    color: #0d6efd;
-}
-
-.category-card.active:hover {
-    background: rgba(13, 110, 253, 0.15);
-    transform: translateY(-2px);
-}
-
-.category-card.active:hover i {
-    transform: scale(1.1);
-}
-
 .card {
     transition: all 0.3s ease;
     border: none;
@@ -98,163 +38,33 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex align-items-center gap-4">
-                <div class="category-card active" data-category="">
-                    <i class="fas fa-th-large" style="color: #0d6efd;"></i>
-                    <span>All Categories</span>
-                </div>
-                <div class="category-card" data-category="Auto Service">
-                    <i class="fas fa-car-alt" style="color: #dc3545;"></i>
-                    <span>Auto Service</span>
-                </div>
-                <div class="category-card" data-category="Food">
-                    <i class="fas fa-utensils" style="color: #ffc107;"></i>
-                    <span>Food & Dining</span>
-                </div>
-                <div class="category-card" data-category="Home Services">
-                    <i class="fas fa-home" style="color: #28a745;"></i>
-                    <span>Home Services</span>
-                </div>
-                <div class="category-card" data-category="Electrical">
-                    <i class="fas fa-plug" style="color: #6f42c1;"></i>
-                    <span>Electrical</span>
-                </div>
-                <div class="category-card" data-category="Plumbing">
-                    <i class="fas fa-shower" style="color: #007bff;"></i>
-                    <span>Plumbing</span>
-                </div>
-                <div class="category-card" data-category="HVAC">
-                    <i class="fas fa-snowflake" style="color: #17a2b8;"></i>
-                    <span>HVAC</span>
-                </div>
-                <div class="category-card" data-category="Roofing">
-                    <i class="fas fa-roofing" style="color: #dc3545;"></i>
-                    <span>Roofing</span>
-                </div>
-                <div class="category-card" data-category="Gardening">
-                    <i class="fas fa-leaf" style="color: #28a745;"></i>
-                    <span>Gardening</span>
-                </div>
+                <input type="text" class="form-control" id="searchInput" placeholder="Filter services...">
             </div>
         </div>
     </div>
 
-    <div class="row" id="servicesContainer">
-        {% for service in services %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h5 class="card-title">{{ service.title }}</h5>
-                    <p class="card-text">{{ service.description[:100] }}...</p>
-                    <p class="card-text"><small class="text-muted">Category: {{ service.category }}</small></p>
-                    <p class="card-text"><small class="text-muted">Posted by {{ service.provider.username }}</small></p>
-                    <a href="{{ url_for('service_detail', service_id=service.id) }}" class="btn btn-primary">View Details</a>
+    <div class="row" id="serviceList">
+        {% if services %}
+            {% for service in services %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ service.title }}</h5>
+                        <p class="card-text">{{ service.description }}</p>
+                        <p class="card-text"><small class="text-muted">Category: {{ service.category }}</small></p>
+                        <p class="card-text"><small class="text-muted">Posted by {{ service.provider.username }}</small></p>
+                        <a href="{{ url_for('service_detail', service_id=service.id) }}" class="btn btn-primary">View Details</a>
+                    </div>
                 </div>
             </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No services found.
+                </div>
+            </div>
+        {% endif %}
     </div>
 </div>
-
-<script>
-$(document).ready(function() {
-    let filterTimeout;
-    let lastClickTime = 0;
-    let clickCooldown = 500;
-    let isLoading = false;
-    let currentCategory = '';
-    let requestQueue = [];
-    let currentRequestId = 0;
-    
-    function filterServices(category) {
-        // Generate unique request ID
-        const requestId = ++currentRequestId;
-        
-        // If we're already loading the same category, do nothing
-        if (isLoading && category === currentCategory) return;
-        
-        // Add to queue if we're still loading
-        if (isLoading) {
-            // Only add to queue if it's not already in queue
-            if (!requestQueue.includes(category)) {
-                requestQueue.push(category);
-            }
-            return;
-        }
-        
-        isLoading = true;
-        currentCategory = category;
-        $('#servicesContainer').html('<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>');
-        
-        // Clear any existing timeout
-        if (filterTimeout) {
-            clearTimeout(filterTimeout);
-        }
-        
-        // Debounce the request
-        filterTimeout = setTimeout(function() {
-            // Only proceed if this is the latest request
-            if (requestId !== currentRequestId) return;
-            
-            $.ajax({
-                url: '/filter_services',
-                method: 'GET',
-                data: { category: category },
-                success: function(data) {
-                    // Only update if this is the latest request
-                    if (requestId === currentRequestId) {
-                        $('#servicesContainer').html(data);
-                    }
-                    isLoading = false;
-                    
-                    // Process any queued requests
-                    if (requestQueue.length > 0) {
-                        const nextCategory = requestQueue.shift();
-                        filterServices(nextCategory);
-                    }
-                },
-                error: function() {
-                    // Only show error if this is the latest request
-                    if (requestId === currentRequestId) {
-                        $('#servicesContainer').html('<div class="alert alert-danger">Error loading services. Please try again.</div>');
-                    }
-                    isLoading = false;
-                    requestQueue = []; // Clear queue on error
-                }
-            });
-        }, 300); // 300ms debounce delay
-    }
-
-    $('.category-card').on('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Get current time
-        const now = Date.now();
-        
-        // If we clicked too quickly, ignore this click
-        if (now - lastClickTime < clickCooldown) {
-            return;
-        }
-        
-        // Update last click time
-        lastClickTime = now;
-        
-        // Remove active class from all cards
-        $('.category-card').removeClass('active');
-        // Add active class to clicked card
-        $(this).addClass('active');
-        
-        const category = $(this).data('category');
-        
-        // If category is empty string, show all services
-        if (!category) {
-            window.location.href = '/services';
-            return;
-        }
-        
-        // Filter services with debounce
-        filterServices(category);
-    });
-});
-</script>
 {% endblock %}

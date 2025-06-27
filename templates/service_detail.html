@@ -3,55 +3,95 @@
 {% block title %}{{ service.title }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">{{ service.title }}</h2>
-                <p class="card-text">{{ service.description }}</p>
-                <p class="card-text"><small class="text-muted">Posted by {{ service.provider.username }}</small></p>
-                
-                {% if current_user.is_authenticated %}
-                <form action="{{ url_for('add_review', service_id=service.id) }}" method="POST" class="mt-4">
-                    <div class="mb-3">
-                        <label for="rating" class="form-label">Rating</label>
-                        <select name="rating" id="rating" class="form-select">
-                            <option value="1">1 Star</option>
-                            <option value="2">2 Stars</option>
-                            <option value="3">3 Stars</option>
-                            <option value="4">4 Stars</option>
-                            <option value="5">5 Stars</option>
-                        </select>
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title">{{ service.title }}</h2>
+                        <span class="badge bg-primary">{{ service.category }}</span>
                     </div>
-                    <div class="mb-3">
-                        <label for="content" class="form-label">Review</label>
-                        <textarea name="content" id="content" class="form-control" rows="3"></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Submit Review</button>
-                </form>
-                {% endif %}
-                
-                <h3 class="mt-4">Reviews</h3>
-                {% for review in service.reviews %}
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ review.author.username }}</h5>
-                        <p class="card-text">{{ review.content }}</p>
-                        <p class="card-text"><small class="text-muted">Rating: {{ review.rating }} stars</small></p>
-                        <p class="card-text"><small class="text-muted">Posted on {{ review.created_at.strftime('%Y-%m-%d') }}</small></p>
+                    <p class="card-text lead">{{ service.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <p class="card-text"><small class="text-muted">Posted by {{ service.provider.username }}</small></p>
+                        <p class="card-text"><small class="text-muted">{{ service.created_at.strftime('%B %d, %Y') }}</small></p>
                     </div>
                 </div>
-                {% endfor %}
             </div>
+
+            {% if current_user.is_authenticated %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Leave a Review</h5>
+                    <form action="{{ url_for('add_review', service_id=service.id) }}" method="POST">
+                        <div class="mb-3">
+                            <label for="rating" class="form-label">Rating</label>
+                            <select name="rating" id="rating" class="form-select">
+                                <option value="1">1 Star</option>
+                                <option value="2">2 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="4">4 Stars</option>
+                                <option value="5">5 Stars</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Your Review</label>
+                            <textarea name="content" id="content" class="form-control" rows="4" placeholder="Share your experience with this service..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if service.reviews %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Customer Reviews</h5>
+                    {% for review in service.reviews %}
+                    <div class="review-card mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">{{ review.author.username }}</h6>
+                            <div class="rating">
+                                {% for i in range(1,6) %}
+                                <i class="fas fa-star {% if i <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <p class="card-text">{{ review.content }}</p>
+                        <div class="text-muted small">
+                            <span>{{ review.created_at.strftime('%B %d, %Y') }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Service Details</h5>
-                <p class="card-text"><strong>Category:</strong> {{ service.category }}</p>
-                <p class="card-text"><strong>Posted:</strong> {{ service.created_at.strftime('%Y-%m-%d') }}</p>
-                <p class="card-text"><strong>Provider:</strong> {{ service.provider.username }}</p>
+
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Service Provider</h5>
+                    <div class="provider-info">
+                        <h6 class="mb-0">{{ service.provider.username }}</h6>
+                        <p class="text-muted small">Member since {{ service.provider.created_at.strftime('%B %Y') }}</p>
+                    </div>
+                    <div class="mt-4">
+                        <h6 class="mb-3">Service Details</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-tag me-2"></i>{{ service.category }}</li>
+                            <li><i class="fas fa-calendar me-2"></i>{{ service.created_at.strftime('%B %d, %Y') }}</li>
+                            <li><i class="fas fa-location-dot me-2"></i>{{ service.provider.location if service.provider.location else 'Location not specified' }}</li>
+                        </ul>
+                    </div>
+                    {% if current_user.is_authenticated and current_user.id != service.provider_id %}
+                    <a href="{{ url_for('contact_provider', provider_id=service.provider_id) }}" class="btn btn-primary w-100 mt-4">
+                        Contact Provider
+                    </a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

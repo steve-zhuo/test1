@@ -1,187 +1,321 @@
 {% extends "base.html" %}
 
-{% block title %}Search Services{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <div class="text-center">
+            <h1 class="display-4 fw-bold mb-3">Find Services</h1>
+            <p class="lead mb-5">Connecting communities with trusted local services</p>
             <div class="search-container">
-                <div class="search-box">
-                    <div class="input-with-icon">
-                        <input type="text" class="search-input" placeholder="Search for services..." aria-label="Search">
-                        <div class="search-icon">
-                            <div class="search-icon-container">
-                                <i class="fas fa-search"></i>
-                                <div class="search-icon-glow"></div>
-                            </div>
-                        </div>
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search for services..." id="searchInput">
+                    <button class="btn btn-outline-primary" type="button" id="searchButton">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hero-section {
+    background-color: #0d6efd;
+    color: white;
+    width: 100%;
+    padding: 3rem 0;
+}
+
+.hero-section .container {
+    max-width: 1200px;
+}
+
+.hero-section h1,
+.hero-section p.lead {
+    color: white;
+}
+
+.search-container {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    margin: 0 auto;
+    max-width: 600px;
+}
+
+.input-group {
+    background: white;
+}
+
+.form-control {
+    background-color: white;
+    color: #0d6efd;
+}
+
+.btn-outline-primary {
+    color: #0d6efd;
+    border-color: #0d6efd;
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: transparent !important;
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-outline-primary i {
+    color: #0d6efd;
+}
+
+.btn-outline-primary:hover i {
+    color: #0d6efd;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Handle search button click
+    $('#searchButton').on('click', function() {
+        const query = $('#searchInput').val().trim();
+        if (query.length >= 2) {
+            window.location.href = `/services?q=${encodeURIComponent(query)}`;
+        } else {
+            alert('Please enter at least 2 characters to search.');
+        }
+    });
+
+    // Handle keyboard enter
+    $('#searchInput').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            $('#searchButton').click();
+        }
+    });
+
+
+});
+</script>
+
+<!-- Categories Section -->
+<div class="categories-section py-4">
+    <div class="container">
+        <h2 class="text-center mb-3">Browse by Category</h2>
+        <div class="row">
+            <div class="col-md-2">
+                <div class="category-card clickable" onclick="window.location.href='/services?q=food'">
+                    <div class="card-content">
+                        <i class="fas fa-utensils fa-2x mb-1"></i>
+                        <h5>Food & Dining</h5>
                     </div>
-                    <div class="search-suggestions">
-                        <div class="suggestion-item">
-                            <i class="fas fa-car"></i>
-                            <span>Auto Services</span>
-                        </div>
-                        <div class="suggestion-item">
-                            <i class="fas fa-home"></i>
-                            <span>Home Services</span>
-                        </div>
-                        <div class="suggestion-item">
-                            <i class="fas fa-tools"></i>
-                            <span>Repairs & Maintenance</span>
-                        </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="category-card clickable" onclick="window.location.href='/services?q=auto'">
+                    <div class="card-content">
+                        <i class="fas fa-car fa-2x mb-1"></i>
+                        <h5>Auto Repair</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="category-card clickable" onclick="window.location.href='/services?q=plumbing'">
+                    <div class="card-content">
+                        <i class="fas fa-wrench fa-2x mb-1"></i>
+                        <h5>Plumbing</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="category-card clickable" onclick="window.location.href='/services?q=electrical'">
+                    <div class="card-content">
+                        <i class="fas fa-bolt fa-2x mb-1"></i>
+                        <h5>Electrical</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="category-card clickable" onclick="window.location.href='/services?q=heating'">
+                    <div class="card-content">
+                        <i class="fas fa-fan fa-2x mb-1"></i>
+                        <h5>Heating & Cooling</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="category-card clickable" onclick="window.location.href='/services?q=roofing'">
+                    <div class="card-content">
+                        <i class="fas fa-umbrella-beach fa-2x mb-1"></i>
+                        <h5>Roofing</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="category-card clickable" onclick="window.location.href='/services?q=garden'">
+                    <div class="card-content">
+                        <i class="fas fa-seedling fa-2x mb-1"></i>
+                        <h5>Garden</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="category-card clickable" onclick="window.location.href='/services?q=home'">
+                    <div class="card-content">
+                        <i class="fas fa-hammer fa-2x mb-1"></i>
+                        <h5>Home Improvement</h5>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="searchResults" class="mt-4"></div>
+<style>
+.category-card.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    padding: 0.88rem;
+    border-radius: 17.6px;
+    background-color: white;
+    box-shadow: 0 0.66px 3.3px rgba(0,0,0,0.1);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.76rem;
+    width: 150px;
+    height: 150px;
+    margin: 1rem;
+}
 
-    <script>
-    $(document).ready(function() {
-        $('.search-input').on('input', function() {
-            const query = $(this).val();
-            
-            if (query.length >= 2) {
-                $.ajax({
-                    url: '/search',
-                    method: 'GET',
-                    data: { q: query },
-                    success: function(data) {
-                        displayResults(data);
-                    }
-                });
-            } else {
-                $('#searchResults').html('');
-            }
-        });
+.category-card.clickable:hover {
+    transform: translateY(-0.66px);
+    box-shadow: 0 1.76px 3.3px rgba(0,0,0,0.1);
+    background-color: #0d6efd;
+}
 
-        function displayResults(results) {
-            let html = '';
-            if (results.length === 0) {
-                html = '<div class="alert alert-info">No results found.</div>';
-            } else {
-                // Group exact matches first
-                const exactMatches = results.filter(service => service.is_exact_match);
-                const otherMatches = results.filter(service => !service.is_exact_match);
+.category-card.clickable:hover .card-content {
+    color: white !important;
+}
 
-                if (exactMatches.length > 0) {
-                    html += '<div class="search-results">';
-                    html += '<h4 class="mt-4">Exact Matches</h4>';
-                    exactMatches.forEach(service => {
-                        html += `
-                            <div class="result-item card mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">${service.title}</h5>
-                                    <p class="card-text">${service.description}</p>
-                                    <p class="card-text"><small class="text-muted">Category: ${service.category}</small></p>
-                                    <p class="card-text"><small class="text-muted">Posted by ${service.provider.username}</small></p>
-                                    <a href="/service/${service.id}" class="btn btn-primary">View Details</a>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-                }
+.category-card.clickable:hover h5 {
+    color: white !important;
+}
 
-                if (otherMatches.length > 0) {
-                    html += '<div class="search-results">';
-                    html += '<h4 class="mt-4">Other Matches</h4>';
-                    otherMatches.forEach(service => {
-                        html += `
-                            <div class="result-item card mb-3">
-                                <div class="card-body">
-                                    <h5 class="card-title">${service.title}</h5>
-                                    <p class="card-text">${service.description}</p>
-                                    <p class="card-text"><small class="text-muted">Category: ${service.category}</small></p>
-                                    <p class="card-text"><small class="text-muted">Posted by ${service.provider.username}</small></p>
-                                    <a href="/service/${service.id}" class="btn btn-primary">View Details</a>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-                }
-            }
-            $('#searchResults').html(html);
-        }
+.card-content {
+    text-align: center;
+    transition: color 0.2s ease;
+}
+
+.category-card.clickable i {
+    color: #0d6efd;
+    font-size: 1.44rem;
+}
+
+.category-card.clickable h5 {
+    margin: 0.18rem 0 0;
+    font-size: 0.9rem;
+    color: #212529;
+    line-height: 1.1;
+    font-weight: 500;
+}
+
+/* Ensure icons also turn white */
+.category-card.clickable:hover i {
+    color: white !important;
+}
+</style>
+
+        
+        const searchQuery = searchTerms[text] || text;
+        console.log('Search query:', searchQuery);
+        
+        const url = '/services?q=' + encodeURIComponent(searchQuery);
+        console.log('Redirecting to:', url);
+        
+        window.location.href = url;
     });
-    </script>
+});
+</script>
 
-    <style>
-    .search-container {
-        max-width: 600px;
-        margin: 0 auto;
-        position: relative;
-    }
+<!-- Featured Providers Section -->
+<div class="featured-providers py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Featured Service Providers</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="provider-card">
+                    <div class="provider-header">
+                        <h3>Bella's Italian Bistro</h3>
+                        <span class="badge bg-primary">food</span>
+                    </div>
+                    <p>Authentic Italian cuisine in a warm, family-friendly atmosphere. Fresh pasta made daily and extensive wine selection.</p>
+                    <a href="#" class="btn btn-outline-primary">View Profile</a>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="provider-card">
+                    <div class="provider-header">
+                        <h3>Elite Home Renovations</h3>
+                        <span class="badge bg-primary">improvement</span>
+                    </div>
+                    <p>Professional kitchen and bathroom renovations with 15+ years of experience. Licensed, insured, and committed to quality craftsmanship.</p>
+                    <a href="#" class="btn btn-outline-primary">View Profile</a>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="provider-card">
+                    <div class="provider-header">
+                        <h3>Mike's Auto Care</h3>
+                        <span class="badge bg-primary">auto</span>
+                    </div>
+                    <p>Full-service auto repair shop specializing in brake service, oil changes, and engine diagnostics. Fair pricing and honest work.</p>
+                    <a href="#" class="btn btn-outline-primary">View Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    .search-box {
-        position: relative;
-        background: linear-gradient(145deg, #f8f9fa, #e9ecef);
-        border-radius: 30px;
-        padding: 12px;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
-    }
+<!-- Recent Requests Section -->
+<div class="recent-requests py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Recent Service Requests</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="request-card">
+                    <h4>Looking for reliable plumber for bathroom renovation</h4>
+                    <p>Need quotes for a complete bathroom renovation including new fixtures, tiling, and plumbing updates. Looking for licensed professionals with good references.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="request-card">
+                    <h4>Electrical work for home office setup</h4>
+                    <p>Need to add additional outlets and potentially upgrade electrical panel for new home office. Looking for licensed electrician with good rates.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="request-card">
+                    <h4>Landscaping help for spring garden makeover</h4>
+                    <p>Looking for a landscaper to help design and install new flower beds, update irrigation, and general yard cleanup. About 1/2 acre property.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-    .search-box:hover {
-        box-shadow: 0 8px 35px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
-    }
-
-    .input-with-icon {
-        position: relative;
-        width: 100%;
-    }
-
-    .search-input {
-        width: 100%;
-        padding: 12px 50px 12px 15px;
-        border: none;
-        background: transparent;
-        font-size: 1.1rem;
-        color: #333;
-        transition: all 0.3s ease;
-    }
-
-    .search-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
-    }
-
-    .search-icon-container {
-        width: 40px;
-        height: 40px;
-        background: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
-    }
-
-    .search-icon-container:hover {
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-
-    .search-icon-glow {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: radial-gradient(circle at center, rgba(0,123,255,0.2) 0%, rgba(0,123,255,0) 70%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .search-icon-container:hover .search-icon-glow {
-        opacity: 1;
+<!-- Trust Section -->
+<div class="trust-section py-5 bg-light">
+    <div class="container text-center">
+        <h2>Trusted by Our Community</h2>
+        <p class="lead">Join thousands of neighbors connecting with local service providers</p>
+    </div>
     }
 
     .search-icon i {

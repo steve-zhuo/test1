@@ -56,13 +56,33 @@ def home():
 
 @app.route('/services')
 def services():
+    query = request.args.get('q')
     category = request.args.get('category')
-    if category:
+    
+    if query:
+        # First try to match the exact category name
+        # Convert to lowercase and replace spaces with underscores
+        category_name = query.lower().replace(' ', '_')
+        services = Service.query.filter_by(category=category_name).all()
+        
+        # If no results, try to match partial category name
+        if not services:
+            services = Service.query.filter(Service.category.ilike(f'%{query}%')).all()
+        
+        # If still no results, try searching in title and description
+        if not services:
+            services = Service.query.filter(
+                (Service.title.ilike(f'%{query}%')) |
+                (Service.description.ilike(f'%{query}%'))
+            ).all()
+    elif category:
+        # Filter by category
         services = Service.query.filter_by(category=category).all()
-        return render_template('services.html', services=services)
     else:
+        # Show all services
         services = Service.query.all()
-        return render_template('services.html', services=services)
+    
+    return render_template('services.html', services=services)
 
 @app.route('/filter_services')
 def filter_services():
@@ -179,78 +199,8 @@ def add_review(service_id):
 
 @app.route('/search')
 def search():
-    query = request.args.get('q', '').lower()
-    if not query:
-        return jsonify([])
-    
-    # Create search patterns for different variations
-    search_patterns = [
-        f'%{query}%',
-        f'%{query} service%',
-        f'%{query} repair%',
-        f'%{query} maintenance%',
-        f'%{query} shop%',
-        f'%{query} center%',
-        f'%{query} specialist%'
-    ]
-    
-    # Search across title, description, and category
-    search_conditions = []
-    for pattern in search_patterns:
-        search_conditions.extend([
-            Service.title.ilike(pattern),
-            Service.description.ilike(pattern),
-            Service.category.ilike(pattern)
-        ])
-    
-    # Add exact matches at the beginning
-    exact_matches = Service.query.filter(
-        db.or_(
-            Service.title.ilike(f'%{query}%'),
-            Service.category.ilike(f'%{query}%')
-        )
-    ).all()
-    
-    # Get remaining matches
-    search_results = Service.query.filter(db.or_(*search_conditions)).all()
-    
-    results = []
-    seen_ids = set()
-    
-    # Add exact matches first
-    for service in exact_matches:
-        if service.id not in seen_ids:
-            seen_ids.add(service.id)
-            results.append({
-                'id': service.id,
-                'title': service.title,
-                'description': service.description[:100] + '...',
-                'category': service.category,
-                'provider': {
-                    'username': service.provider.username
-                },
-                'is_exact_match': True
-            })
-    
-    # Add remaining matches
-    for service in search_results:
-        if service.id not in seen_ids and (
-            query in service.title.lower() or 
-            query in service.description.lower() or 
-            query in service.category.lower()
-        ):
-            seen_ids.add(service.id)
-            results.append({
-                'id': service.id,
-                'title': service.title,
-                'description': service.description[:100] + '...',
-                'category': service.category,
-                'provider': {
-                    'username': service.provider.username
-                }
-            })
-    
-    return jsonify(results)
+    query = request.args.get('q', '')
+    return redirect(url_for('services', q=query))
 
 if __name__ == '__main__':
     db.create_all()
