@@ -97,78 +97,61 @@ $(document).ready(function() {
             $('#searchButton').click();
         }
     });
-
-
 });
 </script>
 
 <!-- Categories Section -->
-<div class="categories-section py-4">
-    <div class="container">
-        <h2 class="text-center mb-3">Browse by Category</h2>
-        <div class="row">
-            <div class="col-md-2">
-                <div class="category-card clickable" onclick="window.location.href='/services?q=food'">
-                    <div class="card-content">
-                        <i class="fas fa-utensils fa-2x mb-1"></i>
-                        <h5>Food & Dining</h5>
-                    </div>
+<div class="categories-section-container" style="background-color: white;">
+    <div class="categories-section py-4" style="background-color: white; padding: 2rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-radius: 10px; margin: 2rem 0;">
+        <div class="container">
+            <h2 class="text-center mb-3">Browse by Category</h2>
+            <div class="d-flex justify-content-between" style="gap: 0.25rem;">
+            <div class="category-card clickable" onclick="window.location.href='/services?q=food'">
+                <div class="card-content">
+                    <i class="fas fa-utensils fa-2x mb-1"></i>
+                    <h5>Food & Dining</h5>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="category-card clickable" onclick="window.location.href='/services?q=auto'">
-                    <div class="card-content">
-                        <i class="fas fa-car fa-2x mb-1"></i>
-                        <h5>Auto Repair</h5>
-                    </div>
+            <div class="category-card clickable" onclick="window.location.href='/services?q=auto'">
+                <div class="card-content">
+                    <i class="fas fa-car fa-2x mb-1"></i>
+                    <h5>Auto Repair</h5>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="category-card clickable" onclick="window.location.href='/services?q=plumbing'">
-                    <div class="card-content">
-                        <i class="fas fa-wrench fa-2x mb-1"></i>
-                        <h5>Plumbing</h5>
-                    </div>
+            <div class="category-card clickable" onclick="window.location.href='/services?q=plumbing'">
+                <div class="card-content">
+                    <i class="fas fa-wrench fa-2x mb-1"></i>
+                    <h5>Plumbing</h5>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="category-card clickable" onclick="window.location.href='/services?q=electrical'">
-                    <div class="card-content">
-                        <i class="fas fa-bolt fa-2x mb-1"></i>
-                        <h5>Electrical</h5>
-                    </div>
+            <div class="category-card clickable" onclick="window.location.href='/services?q=electrical'">
+                <div class="card-content">
+                    <i class="fas fa-bolt fa-2x mb-1"></i>
+                    <h5>Electrical</h5>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="category-card clickable" onclick="window.location.href='/services?q=heating'">
-                    <div class="card-content">
-                        <i class="fas fa-fan fa-2x mb-1"></i>
-                        <h5>Heating & Cooling</h5>
-                    </div>
+            <div class="category-card clickable" onclick="window.location.href='/services?q=heating'">
+                <div class="card-content">
+                    <i class="fas fa-fan fa-2x mb-1"></i>
+                    <h5>Heating & Cooling</h5>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="category-card clickable" onclick="window.location.href='/services?q=roofing'">
-                    <div class="card-content">
-                        <i class="fas fa-umbrella-beach fa-2x mb-1"></i>
-                        <h5>Roofing</h5>
-                    </div>
+            <div class="category-card clickable" onclick="window.location.href='/services?q=roofing'">
+                <div class="card-content">
+                    <i class="fas fa-home fa-2x mb-1"></i>
+                    <h5>Roofing</h5>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="category-card clickable" onclick="window.location.href='/services?q=garden'">
-                    <div class="card-content">
-                        <i class="fas fa-seedling fa-2x mb-1"></i>
-                        <h5>Garden</h5>
-                    </div>
+            <div class="category-card clickable" onclick="window.location.href='/services?q=garden'">
+                <div class="card-content">
+                    <i class="fas fa-seedling fa-2x mb-1"></i>
+                    <h5>Garden</h5>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="category-card clickable" onclick="window.location.href='/services?q=home'">
-                    <div class="card-content">
-                        <i class="fas fa-hammer fa-2x mb-1"></i>
-                        <h5>Home Improvement</h5>
-                    </div>
+            <div class="category-card clickable" onclick="window.location.href='/services?q=home'">
+                <div class="card-content">
+                    <i class="fas fa-hammer fa-2x mb-1"></i>
+                    <h5>Home Improvement</h5>
                 </div>
             </div>
         </div>
@@ -191,7 +174,7 @@ $(document).ready(function() {
     font-size: 1.76rem;
     width: 150px;
     height: 150px;
-    margin: 1rem;
+    margin: 0.25rem;
 }
 
 .category-card.clickable:hover {
@@ -226,14 +209,19 @@ $(document).ready(function() {
     font-weight: 500;
 }
 
+
+
 /* Ensure icons also turn white */
 .category-card.clickable:hover i {
     color: white !important;
 }
 </style>
 
-<!-- Featured Providers Section -->
-<div class="featured-providers py-5 bg-light">
+<!-- Featured Providers Section (Temporarily Disabled)
+To re-enable, remove the comment markers below and above this section -->
+<!--
+<div class="featured-providers-container" style="background-color: white;">
+    <div class="featured-providers py-5 bg-light">
     <div class="container">
         <h2 class="text-center mb-4">Featured Service Providers</h2>
         <div class="row">
@@ -270,230 +258,70 @@ $(document).ready(function() {
         </div>
     </div>
 </div>
+-->
 
-<!-- Recent Requests Section -->
-<div class="recent-requests py-5">
-    <div class="container">
-        <h2 class="text-center mb-4">Recent Service Requests</h2>
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="request-card">
-                    <h4>Looking for reliable plumber for bathroom renovation</h4>
-                    <p>Need quotes for a complete bathroom renovation including new fixtures, tiling, and plumbing updates. Looking for licensed professionals with good references.</p>
+<!-- Recent Requests Section (Temporarily Disabled)
+To re-enable, remove the comment markers below and above this section -->
+<!--
+<div class="recent-requests-container" style="background-color: white;">
+    <div class="recent-requests py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Recent Service Requests</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="request-card">
+                        <h4>Looking for reliable plumber for bathroom renovation</h4>
+                        <p>Need quotes for a complete bathroom renovation including new fixtures, tiling, and plumbing updates. Looking for licensed professionals with good references.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="request-card">
+                        <h4>Electrical work for home office setup</h4>
+                        <p>Need to add additional outlets and potentially upgrade electrical panel for new home office. Looking for licensed electrician with good rates.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="request-card">
+                        <h4>Landscaping help for spring garden makeover</h4>
+                        <p>Looking for a landscaper to help design and install new flower beds, update irrigation, and general yard cleanup. About 1/2 acre property.</p>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="request-card">
-                    <h4>Electrical work for home office setup</h4>
-                    <p>Need to add additional outlets and potentially upgrade electrical panel for new home office. Looking for licensed electrician with good rates.</p>
+        </div>
+    </div>
+</div>
+-->
+<!-- Trust Section -->
+<div class="trust-section-container" style="background-color: white;">
+    <div class="trust-section py-5" style="background-color: #16a34a;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-4">
+                    <h2 style="color: white;">Trusted by Our Community</h2>
+                    <p class="lead" style="color: white;">Join thousands of neighbors connecting with local service providers</p>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="request-card">
-                    <h4>Landscaping help for spring garden makeover</h4>
-                    <p>Looking for a landscaper to help design and install new flower beds, update irrigation, and general yard cleanup. About 1/2 acre property.</p>
+            <div class="row justify-content-center">
+                <div class="col-md-3 text-center mb-4">
+                    <h3 style="color: white;">{{ total_service_providers }}</h3>
+                    <p style="color: white;">Service Providers</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <h3 style="color: white;">{{ total_customers }}</h3>
+                    <p style="color: white;">Happy Customers</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <h3 style="color: white;">{{ total_reviews }}</h3>
+                    <p style="color: white;">Reviews & Ratings</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <h3 style="color: white;">{{ total_service_requests }}</h3>
+                    <p style="color: white;">Service Requests</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Trust Section -->
-<div class="trust-section py-5 bg-light">
-    <div class="container text-center">
-        <h2>Trusted by Our Community</h2>
-        <p class="lead">Join thousands of neighbors connecting with local service providers</p>
-    </div>
-    }
 
-    .search-icon i {
-        color: #007bff;
-        font-size: 1.2rem;
-    }
-
-    .search-input {
-        width: 100%;
-        padding: 12px 60px 12px 15px;
-        border: none;
-        background: transparent;
-        font-size: 1.1rem;
-        color: #333;
-        transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-        outline: none;
-        box-shadow: none;
-        color: #007bff;
-    }
-
-    .search-suggestions {
-        position: absolute;
-        top: 60px;
-        left: 0;
-        right: 0;
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        padding: 10px 0;
-        display: none;
-        z-index: 10;
-    }
-
-    .search-input:focus ~ .search-suggestions {
-        display: block;
-    }
-
-    .search-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-
-    .search-icon-container {
-        width: 40px;
-        height: 40px;
-        background: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
-    }
-
-    .search-icon-container:hover {
-        transform: translateY(-50%) scale(1.1);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-
-    .suggestion-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 20px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .suggestion-item:hover {
-        background: #f8f9fa;
-    }
-
-    .suggestion-item i {
-        margin-right: 10px;
-        color: #007bff;
-        font-size: 1.2rem;
-    }
-
-    .suggestion-item span {
-        color: #333;
-        font-size: 0.95rem;
-    }
-
-
-
-    .search-results {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.08);
-        margin-top: 1rem;
-        border: 1px solid rgba(0,0,0,0.05);
-    }
-
-    .result-item {
-        background: #f8f9fa;
-        border: none;
-        border-radius: 10px;
-        margin-bottom: 1rem;
-        transition: all 0.3s ease;
-        overflow: hidden;
-    }
-
-    .result-item:hover {
-        background: white;
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .result-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .result-item .card-body {
-        padding: 1rem;
-    }
-
-    .result-item .card-title {
-        font-size: 1.1rem;
-        color: #333;
-    }
-
-    .result-item .card-text {
-        color: #6c757d;
-        font-size: 0.9rem;
-    }
-
-    .result-item .btn-primary {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-        border-radius: 20px;
-    }
-
-    .search-results h4 {
-        color: #007bff;
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-        font-size: 1.2rem;
-        font-weight: 600;
-        border-bottom: 2px solid #e9ecef;
-        padding-bottom: 0.5rem;
-    }
-    </style>
-</div>
-
-<style>
-.search-container {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.search-input {
-    padding: 1rem;
-    font-size: 1.2rem;
-    border-radius: 25px 0 0 25px;
-}
-
-.search-input:focus {
-    box-shadow: none;
-    border-color: #007bff;
-}
-
-#searchButton {
-    border-radius: 0 25px 25px 0;
-    background-color: #007bff;
-    border: none;
-    padding: 1rem;
-}
-
-#searchButton:hover {
-    background-color: #0056b3;
-}
-
-.search-results {
-    background: white;
-    padding: 1rem;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.result-item {
-    transition: transform 0.2s;
-}
-
-.result-item:hover {
-    transform: translateY(-5px);
-}
-</style>
 {% endblock %}

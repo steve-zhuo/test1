@@ -1,73 +1,139 @@
 {% extends "base.html" %}
 
-{% block title %}{{ service.title }}{% endblock %}
+{% block styles %}
+<style>
+    /* Review styles */
+    .review-card {
+        padding: 1rem;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        margin-bottom: 1rem;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .review-stars {
+        color: #ffc107;
+        font-size: 1.2rem;
+    }
+
+    .review-stars i {
+        cursor: pointer;
+    }
+
+    .review-stars i:hover {
+        color: #ffd700;
+    }
+
+    .review-stars i.selected {
+        color: #ffd700;
+    }
+
+    .review-form {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-top: 1px solid #eee;
+    }
+
+    .review-comment {
+        margin-top: 0.5rem;
+    }
+
+    .review-list {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-top: 1px solid #eee;
+    }
+
+    .review-item {
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+    }
+
+    .review-item h6 {
+        color: #333;
+    }
+
+    .review-item p {
+        color: #333;
+    }
+
+    .review-stars {
+        color: #ffc107;
+    }
+
+    .review-stars i {
+        margin-right: 2px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container mt-4">
     <div class="row">
         <div class="col-md-8">
-            <div class="card h-100">
+            <div class="card">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2 class="card-title">{{ service.title }}</h2>
-                        <span class="badge bg-primary">{{ service.category }}</span>
-                    </div>
-                    <p class="card-text lead">{{ service.description }}</p>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <p class="card-text"><small class="text-muted">Posted by {{ service.provider.username }}</small></p>
-                        <p class="card-text"><small class="text-muted">{{ service.created_at.strftime('%B %d, %Y') }}</small></p>
-                    </div>
+                    <h2 class="card-title">{{ service.title }}</h2>
+                    <p class="card-text">{{ service.description }}</p>
                 </div>
             </div>
 
-            {% if current_user.is_authenticated %}
             <div class="card mt-4">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Leave a Review</h5>
-                    <form action="{{ url_for('add_review', service_id=service.id) }}" method="POST">
-                        <div class="mb-3">
-                            <label for="rating" class="form-label">Rating</label>
-                            <select name="rating" id="rating" class="form-select">
-                                <option value="1">1 Star</option>
-                                <option value="2">2 Stars</option>
-                                <option value="3">3 Stars</option>
-                                <option value="4">4 Stars</option>
-                                <option value="5">5 Stars</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="content" class="form-label">Your Review</label>
-                            <textarea name="content" id="content" class="form-control" rows="4" placeholder="Share your experience with this service..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit Review</button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if service.reviews %}
-            <div class="card mt-4">
-                <div class="card-body">
-                    <h5 class="card-title mb-4">Customer Reviews</h5>
-                    {% for review in service.reviews %}
-                    <div class="review-card mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0">{{ review.author.username }}</h6>
-                            <div class="rating">
-                                {% for i in range(1,6) %}
-                                <i class="fas fa-star {% if i <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
-                                {% endfor %}
+                    <h5>Customer Reviews</h5>
+                    {% if current_user.is_authenticated %}
+                        <div class="review-form-container mb-4">
+                            <button class="btn btn-primary mb-3 toggle-review-form" data-service-id="{{ service.id }}">
+                                <i class="fas fa-star me-1"></i>Write a Review
+                            </button>
+                            <div class="review-form" style="display: none;">
+                                <form action="{{ url_for('add_review', service_id=service.id) }}" method="POST">
+                                    <div class="review-stars mb-3" data-service-id="{{ service.id }}">
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <i class="fas fa-star"></i>
+                                        <input type="hidden" name="rating" id="rating_{{ service.id }}" value="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <textarea name="content" class="form-control" rows="4" placeholder="Share your experience..." required></textarea>
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary me-2">Submit Review</button>
+                                        <button type="button" class="btn btn-secondary cancel-review">Cancel</button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                        <p class="card-text">{{ review.content }}</p>
-                        <div class="text-muted small">
-                            <span>{{ review.created_at.strftime('%B %d, %Y') }}</span>
-                        </div>
+                    {% endif %}
+                    <div class="review-list">
+                        {% if service.reviews %}
+                            {% for review in service.reviews %}
+                            <div class="review-item">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">{{ review.author.username }}</h6>
+                                    <div class="review-stars">
+                                        {% for i in range(1,6) %}
+                                        <i class="fas fa-star" style="color: {% if i <= review.rating %}#ffc107{% else %}gray{% endif %};"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <p class="mb-2">{{ review.content }}</p>
+                                <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No reviews found yet</p>
+                        {% endif %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-            {% endif %}
         </div>
 
         <div class="col-md-4">
@@ -96,4 +162,70 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('JavaScript is working');
+    
+    // Star rating functionality
+    const starContainers = document.querySelectorAll('.review-stars');
+    
+    starContainers.forEach(container => {
+        const stars = container.querySelectorAll('i');
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        
+        stars.forEach((star, index) => {
+            star.addEventListener('click', function() {
+                const rating = index + 1;
+                hiddenInput.value = rating;
+                updateStars(stars, rating);
+            });
+            
+            star.addEventListener('mouseover', function() {
+                const rating = index + 1;
+                updateStars(stars, rating);
+            });
+            
+            star.addEventListener('mouseout', function() {
+                updateStars(stars, parseInt(hiddenInput.value));
+            });
+        });
+    });
+
+    // Review form toggle functionality
+    const toggleButtons = document.querySelectorAll('.toggle-review-form');
+    const cancelButtons = document.querySelectorAll('.cancel-review');
+    const formContainers = document.querySelectorAll('.review-form-container');
+
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const serviceId = this.dataset.serviceId;
+            const formContainer = this.closest('.review-form-container').querySelector('.review-form');
+            formContainer.style.display = 'block';
+            this.style.display = 'none';
+        });
+    });
+
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const formContainer = this.closest('.review-form');
+            const toggleButton = formContainer.closest('.review-form-container').querySelector('.toggle-review-form');
+            formContainer.style.display = 'none';
+            toggleButton.style.display = 'block';
+        });
+    });
+
+    function updateStars(stars, rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('selected');
+            } else {
+                star.classList.remove('selected');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

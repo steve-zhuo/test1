@@ -28,6 +28,52 @@
 .card-text {
     color: #6c757d;
 }
+
+/* Review styles */
+.review-stars {
+    color: #ffc107;
+    font-size: 1.2rem;
+}
+
+.review-stars i {
+    cursor: pointer;
+}
+
+.review-stars i:hover {
+    color: #ffd700;
+}
+
+.review-stars i.selected {
+    color: #ffd700;
+}
+
+.review-form {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.review-comment {
+    margin-top: 0.5rem;
+}
+
+.review-list {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.review-item {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.review-item .review-stars {
+    color: #ffc107;
+    font-size: 1rem;
+}
 </style>
 {% endblock %}
 
@@ -53,7 +99,7 @@
                         <p class="card-text">{{ service.description }}</p>
                         <p class="card-text"><small class="text-muted">Category: {{ service.category }}</small></p>
                         <p class="card-text"><small class="text-muted">Posted by {{ service.provider.username }}</small></p>
-                        <a href="{{ url_for('service_detail', service_id=service.id) }}" class="btn btn-primary">View Details</a>
+                        <a href="{{ url_for('service_detail', service_id=service.id) }}" class="btn btn-primary mt-3">View Details</a>
                     </div>
                 </div>
             </div>
@@ -67,4 +113,64 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Star rating functionality
+    const starContainers = document.querySelectorAll('.review-stars');
+    
+    starContainers.forEach(container => {
+        const stars = container.querySelectorAll('i');
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        
+        stars.forEach((star, index) => {
+            star.addEventListener('click', function() {
+                const rating = index + 1;
+                hiddenInput.value = rating;
+                updateStars(stars, rating);
+            });
+            
+            star.addEventListener('mouseover', function() {
+                const rating = index + 1;
+                updateStars(stars, rating);
+            });
+            
+            star.addEventListener('mouseout', function() {
+                updateStars(stars, parseInt(hiddenInput.value));
+            });
+        });
+    });
+
+    // Review form toggle functionality
+    const toggleButtons = document.querySelectorAll('.toggle-review-form');
+    const cancelButtons = document.querySelectorAll('.cancel-review');
+    const formContainers = document.querySelectorAll('.review-form-container');
+
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const serviceId = this.dataset.serviceId;
+            const formContainer = document.querySelector(`.review-form-container[data-service-id="${serviceId}"]`);
+            formContainer.style.display = 'block';
+            this.style.display = 'none';
+        });
+    });
+
+    cancelButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const formContainer = this.closest('.review-form-container');
+            const toggleButton = formContainer.previousElementSibling.querySelector('.toggle-review-form');
+            formContainer.style.display = 'none';
+            toggleButton.style.display = 'block';
+        });
+    });
+
+    function updateStars(stars, rating) {
+        stars.forEach((star, index) => {
+            star.classList.toggle('selected', index < rating);
+        });
+    }
+});
+</script>
 {% endblock %}

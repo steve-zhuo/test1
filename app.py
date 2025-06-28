@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     services = db.relationship('Service', backref='provider', lazy=True)
     reviews = db.relationship('Review', backref='author', lazy=True)
 
@@ -32,6 +33,11 @@ class Service(db.Model):
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50), nullable=False)
+    phone_number = db.Column(db.String(20), nullable=False)
+    address = db.Column(db.Text)
+    website = db.Column(db.String(200))
+    email = db.Column(db.String(120))
+    owner_name = db.Column(db.String(100))
     provider_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     reviews = db.relationship('Review', backref='service', lazy=True)
@@ -39,7 +45,7 @@ class Service(db.Model):
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -51,8 +57,21 @@ def load_user(user_id):
 # Routes
 @app.route('/')
 def home():
+    # Get stats from database
+    total_service_providers = User.query.filter(User.services.any()).count()
+    total_customers = Review.query.distinct(Review.author_id).count()
+    total_reviews = Review.query.count()
+    total_service_requests = Service.query.count()
+    
+    # Get recent services
     services = Service.query.order_by(Service.created_at.desc()).limit(10).all()
-    return render_template('index.html', services=services)
+    
+    return render_template('index.html', 
+                         services=services,
+                         total_service_providers=total_service_providers,
+                         total_customers=total_customers,
+                         total_reviews=total_reviews,
+                         total_service_requests=total_service_requests)
 
 @app.route('/services')
 def services():
@@ -113,6 +132,12 @@ def filter_services():
 @app.route('/services/<int:service_id>')
 def service_detail(service_id):
     service = Service.query.get_or_404(service_id)
+    # Load reviews with the service
+    service.reviews = Review.query.filter_by(service_id=service_id).order_by(Review.created_at.desc()).all()
+    print(f"Service ID: {service.id}")
+    print(f"Number of reviews: {len(service.reviews)}")
+    for review in service.reviews:
+        print(f"Review: {review.content} by {review.author.username} - Rating: {review.rating}")
     return render_template('service_detail.html', service=service)
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -160,21 +185,43 @@ def logout():
 @login_required
 def add_service():
     if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        category = request.form.get('category')
+        title = request.form['title']
+        description = request.form['description']
+        category = request.form['category']
+        phone_number = request.form['phone_number']
+        owner_name = request.form.get('owner_name')
+        email = request.form.get('email')
+        address = request.form.get('address')
+        website = request.form.get('website')
+        review_content = request.form['review_content']
+        review_rating = int(request.form['review_rating'])
         
+        # Create service
         service = Service(
             title=title,
             description=description,
             category=category,
+            phone_number=phone_number,
+            owner_name=owner_name,
+            email=email,
+            address=address,
+            website=website,
             provider_id=current_user.id
         )
         db.session.add(service)
         db.session.commit()
         
-        flash('Service added successfully!')
-        return redirect(url_for('home'))
+        # Create review
+        review = Review(
+            content=review_content,
+            rating=review_rating,
+            author_id=current_user.id,
+            service_id=service.id
+        )
+        db.session.add(review)
+        db.session.commit()
+        
+        return redirect(url_for('services', q=category))
     
     return render_template('add_service.html')
 
@@ -196,6 +243,15 @@ def add_review(service_id):
     
     flash('Review added successfully!')
     return redirect(url_for('service_detail', service_id=service_id))
+
+@app.route('/contact_provider/<int:provider_id>', methods=['GET'])
+@login_required
+def contact_provider(provider_id):
+    provider = User.query.get_or_404(provider_id)
+    
+    # For now, just redirect to the provider's services page
+    # Later, we can implement a proper contact form
+    return redirect(url_for('services', q=f'provider:{provider.username}'))
 
 @app.route('/search')
 def search():
