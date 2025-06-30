@@ -20,12 +20,10 @@
 
     .review-stars i {
         cursor: pointer;
+        margin-right: 2px;
     }
 
-    .review-stars i:hover {
-        color: #ffd700;
-    }
-
+    .review-stars i:hover,
     .review-stars i.selected {
         color: #ffd700;
     }
@@ -51,23 +49,11 @@
         padding: 0.5rem;
         background: #f8f9fa;
         border-radius: 4px;
-        background-color: #f8f9fa;
     }
 
-    .review-item h6 {
-        color: #333;
-    }
-
+    .review-item h6,
     .review-item p {
         color: #333;
-    }
-
-    .review-stars {
-        color: #ffc107;
-    }
-
-    .review-stars i {
-        margin-right: 2px;
     }
 </style>
 {% endblock %}
@@ -120,7 +106,7 @@
                                     <h6 class="mb-0">{{ review.author.username }}</h6>
                                     <div class="review-stars">
                                         {% for i in range(1,6) %}
-                                        <i class="fas fa-star" style="color: {% if i <= review.rating %}#ffc107{% else %}gray{% endif %};"></i>
+                                        <i class="fas fa-star star-rating" data-rating="{{ i }}" data-max="{{ review.rating }}"></i>
                                         {% endfor %}
                                     </div>
                                 </div>

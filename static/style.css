@@ -13,6 +13,19 @@ body {
     font-size: 1.5rem;
 }
 
+/* Star Rating Styles */
+.star-rating {
+    color: #888888;
+}
+
+.star-rating[data-rating^="1"][data-max^="1"],
+.star-rating[data-rating^="2"][data-max^="2"],
+.star-rating[data-rating^="3"][data-max^="3"],
+.star-rating[data-rating^="4"][data-max^="4"],
+.star-rating[data-rating^="5"][data-max^="5"] {
+    color: #ffc107;
+}
+
 /* Hero Section */
 .hero-section {
     background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url('https://source.unsplash.com/1600x900/?local+services');
