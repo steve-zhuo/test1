@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics{% endblock %}
+
+{% block styles %}
+<style>
+    .stats-card {
+        margin-bottom: 20px;
+    }
+    .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .top-service-card {
+        margin-bottom: 15px;
+    }
+    .search-term {
+        margin-bottom: 10px;
+        padding: 5px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    #traffic-chart-container {
+        margin-top: 20px;
+    }
+    .chart-controls {
+        margin-bottom: 20px;
+    }
+    .chart-labels {
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('trafficChart');
+    
+    // Convert data to chart format
+    const dailyData = {
+        labels: JSON.parse("{{ daily_data|map(attribute='date')|map('strftime', '%B %d, %Y')|list|tojson|safe }}"),
+        data: JSON.parse("{{ daily_data|map(attribute='count')|list|tojson|safe }}")
+    };
+    
+    const weeklyData = {
+        labels: JSON.parse("{{ weekly_data|map(attribute='week')|map('strftime', 'Week %W (%Y)')|list|tojson|safe }}"),
+        data: JSON.parse("{{ weekly_data|map(attribute='count')|list|tojson|safe }}")
+    };
+    
+    const monthlyData = {
+        labels: JSON.parse("{{ monthly_data|map(attribute='month')|map('strftime', '%B %Y')|list|tojson|safe }}"),
+        data: JSON.parse("{{ monthly_data|map(attribute='count')|list|tojson|safe }}")
+    };
+    
+    const yearlyData = {
+        labels: JSON.parse("{{ yearly_data|map(attribute='year')|list|tojson|safe }}"),
+        data: JSON.parse("{{ yearly_data|map(attribute='count')|list|tojson|safe }}")
+    };
+    
+    // Initial data
+    let currentData = dailyData;
+    
+    const trafficChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: currentData.labels,
+            datasets: [{
+                label: 'Traffic',
+                data: currentData.data,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time Period'
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 10,
+                        callback: function(value, index, ticks) {
+                            // Format dates based on the selected period
+                            const period = document.getElementById('trafficPeriod').value;
+                            switch(period) {
+                                case 'daily':
+                                    // Format daily dates as "Month DD"
+                                    const dateParts = value.split('-');
+                                    const dailyDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                                    return dailyDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                case 'weekly':
+                                    // Format weekly dates as "Week WW"
+                                    const weekParts = value.split('-');
+                                    return `Week ${weekParts[1]}`;
+                                case 'monthly':
+                                    // Format monthly dates as "MMM YYYY"
+                                    const monthParts = value.split('-');
+                                    const monthlyDate = new Date(monthParts[0], monthParts[1] - 1, 1);
+                                    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                                case 'yearly':
+                                    return value;
+                            }
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Reviews/Searches'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Traffic History'
+                }
+            }
+        }
+    });
+    
+    // Update chart when period changes
+    document.getElementById('trafficPeriod').addEventListener('change', function() {
+        const period = this.value;
+        switch(period) {
+            case 'daily':
+                currentData = dailyData;
+                break;
+            case 'weekly':
+                currentData = weeklyData;
+                break;
+            case 'monthly':
+                currentData = monthlyData;
+                break;
+            case 'yearly':
+                currentData = yearlyData;
+                break;
+        }
+        
+        trafficChart.data.labels = currentData.labels;
+        trafficChart.data.datasets[0].data = currentData.data;
+        trafficChart.update();
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Site Statistics</h2>
+    
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h5 class="card-title">Daily Traffic</h5>
+                    <p class="stat-number">{{ daily_searches }}</p>
+                    <p class="card-text">Reviews/Searches in the last 24 hours</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h5 class="card-title">Weekly Traffic</h5>
+                    <p class="stat-number">{{ weekly_searches }}</p>
+                    <p class="card-text">Reviews/Searches in the last 7 days</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h5 class="card-title">Monthly Traffic</h5>
+                    <p class="stat-number">{{ monthly_searches }}</p>
+                    <p class="card-text">Reviews/Searches in the last 30 days</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <h5 class="card-title">Yearly Traffic</h5>
+                    <p class="stat-number">{{ yearly_searches }}</p>
+                    <p class="card-text">Reviews/Searches in the last year</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Traffic History</h5>
+                    <div class="chart-controls">
+                        <select id="trafficPeriod" class="form-select">
+                            <option value="daily">Daily (Last 7 Days)</option>
+                            <option value="weekly">Weekly (Last 4 Weeks)</option>
+                            <option value="monthly">Monthly (Last 12 Months)</option>
+                            <option value="yearly">Yearly (Last 5 Years)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="traffic-chart-container">
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Most Searched Terms</h5>
+                </div>
+                <div class="card-body">
+                    <div class="search-terms-list">
+                        {% for term, count in search_terms %}
+                        <div class="search-term">
+                            <span class="term-text">"{{ term }}"</span>
+                            <span class="term-count">({{ count }} times)</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Rated Services</h5>
+                </div>
+                <div class="card-body">
+                    <div class="top-services">
+                        <h6 class="mb-3">This Week</h6>
+                        {% for service, avg_rating in top_services_week %}
+                        <div class="top-service-card">
+                            <div class="row">
+                                <div class="col-8">
+                                    <a href="{{ url_for('service_detail', service_id=service.id) }}">{{ service.title }}</a>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <span class="rating">{{ "%.1f"|format(avg_rating) }}/5</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <h6 class="mb-3 mt-3">This Month</h6>
+                        {% for service, avg_rating in top_services_month %}
+                        <div class="top-service-card">
+                            <div class="row">
+                                <div class="col-8">
+                                    <a href="{{ url_for('service_detail', service_id=service.id) }}">{{ service.title }}</a>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <span class="rating">{{ "%.1f"|format(avg_rating) }}/5</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <h6 class="mb-3 mt-3">This Year</h6>
+                        {% for service, avg_rating in top_services_year %}
+                        <div class="top-service-card">
+                            <div class="row">
+                                <div class="col-8">
+                                    <a href="{{ url_for('service_detail', service_id=service.id) }}">{{ service.title }}</a>
+                                </div>
+                                <div class="col-4 text-end">
+                                    <span class="rating">{{ "%.1f"|format(avg_rating) }}/5</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

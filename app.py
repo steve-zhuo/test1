@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -75,12 +76,16 @@ def home():
     # Get recent services
     services = Service.query.order_by(Service.created_at.desc()).limit(10).all()
     
+    # Get recent reviews
+    recent_reviews = Review.query.order_by(Review.created_at.desc()).limit(10).all()
+    
     return render_template('index.html', 
                          services=services,
                          total_service_providers=total_service_providers,
                          total_customers=total_customers,
                          total_reviews=total_reviews,
-                         total_service_requests=total_service_requests)
+                         total_service_requests=total_service_requests,
+                         recent_reviews=recent_reviews)
 
 @app.route('/users')
 @login_required
@@ -477,6 +482,146 @@ def contact_provider(provider_id):
 def search():
     query = request.args.get('q', '')
     return redirect(url_for('services', q=query))
+
+@app.route('/stats')
+@login_required
+def stats():
+    if current_user.role != 'admin':
+        flash('Admin access required')
+        return redirect(url_for('home'))
+    # Get current date
+    today = datetime.utcnow()
+    
+    # Traffic stats
+    daily_searches = Review.query.filter(
+        Review.created_at >= today - timedelta(days=1)
+    ).count()
+    
+    weekly_searches = Review.query.filter(
+        Review.created_at >= today - timedelta(weeks=1)
+    ).count()
+    
+    monthly_searches = Review.query.filter(
+        Review.created_at >= today - timedelta(days=30)
+    ).count()
+    
+    yearly_searches = Review.query.filter(
+        Review.created_at >= today - timedelta(days=365)
+    ).count()
+
+    # Get traffic data for chart
+    from sqlalchemy import extract, Date
+    
+    # Daily traffic (last 7 days)
+    daily_data = db.session.query(
+        func.strftime('%Y-%m-%d', Review.created_at).label('date'),
+        func.count().label('count')
+    ).filter(
+        Review.created_at >= today - timedelta(days=7)
+    ).group_by(
+        func.strftime('%Y-%m-%d', Review.created_at)
+    ).order_by(
+        Review.created_at
+    ).all()
+    
+    # Weekly traffic (last 4 weeks)
+    weekly_data = db.session.query(
+        func.strftime('%Y-%W', Review.created_at).label('week'),
+        func.count().label('count')
+    ).filter(
+        Review.created_at >= today - timedelta(weeks=4)
+    ).group_by(
+        func.strftime('%Y-%W', Review.created_at)
+    ).order_by(
+        Review.created_at
+    ).all()
+    
+    # Monthly traffic (last 12 months)
+    monthly_data = db.session.query(
+        func.strftime('%Y-%m', Review.created_at).label('month'),
+        func.count().label('count')
+    ).filter(
+        Review.created_at >= today - timedelta(days=365)
+    ).group_by(
+        func.strftime('%Y-%m', Review.created_at)
+    ).order_by(
+        Review.created_at
+    ).all()
+    
+    # Yearly traffic (last 5 years)
+    yearly_data = db.session.query(
+        func.strftime('%Y', Review.created_at).label('year'),
+        func.count().label('count')
+    ).filter(
+        Review.created_at >= today - timedelta(days=365*5)
+    ).group_by(
+        func.strftime('%Y', Review.created_at)
+    ).order_by(
+        Review.created_at
+    ).all()
+    
+    # Most searched terms (from reviews)
+    # Get all reviews from the last month
+    recent_reviews = Review.query.filter(
+        Review.created_at >= today - timedelta(days=30)
+    ).all()
+    
+    # Process reviews to extract search terms
+    search_terms = {}
+    for review in recent_reviews:
+        # Split content into words and count them
+        words = review.content.lower().split()
+        for word in words:
+            if len(word) > 2:  # Ignore very short words
+                search_terms[word] = search_terms.get(word, 0) + 1
+    
+    # Sort terms by count and get top 10
+    search_terms = sorted(
+        search_terms.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:10]
+
+    # Top rated services
+    top_services_week = (
+        db.session.query(Service, func.avg(Review.rating).label('avg_rating'))
+        .join(Review)
+        .filter(Review.created_at >= today - timedelta(weeks=1))
+        .group_by(Service.id)
+        .order_by(func.avg(Review.rating).desc())
+        .limit(5)
+        .all()
+    )
+    
+    top_services_month = (
+        db.session.query(Service, func.avg(Review.rating).label('avg_rating'))
+        .join(Review)
+        .filter(Review.created_at >= today - timedelta(days=30))
+        .group_by(Service.id)
+        .order_by(func.avg(Review.rating).desc())
+        .limit(5)
+        .all()
+    )
+    
+    top_services_year = (
+        db.session.query(Service, func.avg(Review.rating).label('avg_rating'))
+        .join(Review)
+        .filter(Review.created_at >= today - timedelta(days=365))
+        .group_by(Service.id)
+        .order_by(func.avg(Review.rating).desc())
+        .limit(5)
+        .all()
+    )
+
+    return render_template('stats.html',
+        daily_searches=daily_searches,
+        weekly_searches=weekly_searches,
+        monthly_searches=monthly_searches,
+        yearly_searches=yearly_searches,
+        search_terms=search_terms,
+        top_services_week=top_services_week,
+        top_services_month=top_services_month,
+        top_services_year=top_services_year)
 
 if __name__ == '__main__':
     db.create_all()

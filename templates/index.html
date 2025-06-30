@@ -291,6 +291,43 @@ To re-enable, remove the comment markers below and above this section -->
     </div>
 </div>
 -->
+
+<!-- Recent Reviews Section -->
+<div class="recent-reviews-container" style="background-color: white;">
+    <div class="recent-reviews py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Recent Reviews</h2>
+            <div class="row">
+                {% for review in recent_reviews %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ review.service.name }}</h5>
+                            <div class="rating mb-2">
+                                {% for i in range(5) %}
+                                    {% if i < review.rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <p class="card-text">{{ review.content }}</p>
+                            <div class="review-meta">
+                                <small class="text-muted">
+                                    By {{ review.author.username }} on 
+                                    {{ review.created_at.strftime('%B %d, %Y') }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Trust Section -->
 <div class="trust-section-container" style="background-color: white;">
     <div class="trust-section py-5" style="background-color: #16a34a;">

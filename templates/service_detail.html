@@ -130,6 +130,17 @@
 <script>
     console.log('Service detail page scripts loaded');
 
+    // Function to update star ratings
+    function updateStars(stars, rating) {
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.add('selected');
+            } else {
+                star.classList.remove('selected');
+            }
+        });
+    }
+
     // Initialize page when DOM is ready
     $(document).ready(function() {
         // Initialize review delete functionality
@@ -156,7 +167,6 @@
         });
 
         // Initialize star rating functionality
-        console.log('Initializing star rating functionality');
         const starContainers = document.querySelectorAll('.review-stars');
         
         starContainers.forEach(container => {
@@ -183,7 +193,6 @@
         });
 
         // Review form toggle functionality
-        console.log('Initializing review form toggle functionality');
         const toggleButtons = document.querySelectorAll('.toggle-review-form');
         const cancelButtons = document.querySelectorAll('.cancel-review');
         const formContainers = document.querySelectorAll('.review-form-container');
@@ -206,15 +215,7 @@
             });
         });
     });
-
-    function updateStars(stars, rating) {
-        stars.forEach((star, index) => {
-            if (index < rating) {
-                star.classList.add('selected');
-            } else {
-                star.classList.remove('selected');
-            }
-        });
-    }
+</script>
+});
 </script>
 {% endblock %}
