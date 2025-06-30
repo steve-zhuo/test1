@@ -4,6 +4,22 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
+/* Review Styles */
+.review-card {
+    padding: 1rem;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    margin-bottom: 1rem;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    border-top: 1px solid #eee;
+}
+
+.review-comment {
+    margin-top: 0.5rem;
+}
+
 /* Navbar Styles */
 .navbar {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -14,8 +30,48 @@ body {
 }
 
 /* Star Rating Styles */
+.review-stars {
+    color: #888888;
+    font-size: 1.2rem;
+}
+
+/* Interactive stars in review form */
+.review-stars i {
+    cursor: pointer;
+    margin-right: 2px;
+    color: inherit;
+}
+
+.review-stars i:hover,
+.review-stars i.selected {
+    color: #ffd700;
+}
+
+/* Static stars in saved reviews */
 .star-rating {
     color: #888888;
+}
+
+.star-rating.selected {
+    color: #ffd700;
+}
+
+.review-form {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.star-rating {
+    color: #888888;
+}
+
+.star-rating {
+    color: #888888;
+}
+
+.star-rating.selected {
+    color: #ffc107;
 }
 
 .star-rating[data-rating^="1"][data-max^="1"],
