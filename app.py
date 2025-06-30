@@ -26,9 +26,10 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
+    role = db.Column(db.String(20), nullable=False, default='user')  # 'user', 'admin', or 'supervisor'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    services = db.relationship('Service', backref='provider', lazy=True)
-    reviews = db.relationship('Review', backref='author', lazy=True)
+    services = db.relationship('Service', backref='provider', lazy=True, cascade='all, delete-orphan')
+    reviews = db.relationship('Review', backref='author', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -48,14 +49,14 @@ class Service(db.Model):
     owner_name = db.Column(db.String(100))
     provider_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    reviews = db.relationship('Review', backref='service', lazy=True)
+    reviews = db.relationship('Review', backref='service', lazy=True, cascade='all, delete-orphan')
 
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id', ondelete='CASCADE'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 @login_manager.user_loader
@@ -80,6 +81,134 @@ def home():
                          total_customers=total_customers,
                          total_reviews=total_reviews,
                          total_service_requests=total_service_requests)
+
+@app.route('/users')
+@login_required
+def users():
+    if current_user.role != 'admin':
+        flash('Access denied. Admin privileges required.')
+        return redirect(url_for('home'))
+    
+    search_query = request.args.get('q', '').strip()
+    if search_query:
+        # Search in both username and email fields
+        users = User.query.filter(
+            (User.username.ilike(f'%{search_query}%')) |
+            (User.email.ilike(f'%{search_query}%'))
+        ).all()
+    else:
+        users = User.query.all()
+    
+    return render_template('users.html', users=users, search_query=search_query)
+
+@app.route('/user/<int:user_id>/role', methods=['PUT'])
+@login_required
+def update_user_role(user_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Admin privileges required'}), 403
+    
+    data = request.get_json()
+    new_role = data.get('role')
+    
+    if new_role not in ['user', 'supervisor', 'admin']:
+        return jsonify({'error': 'Invalid role'}), 400
+    
+    user = User.query.get_or_404(user_id)
+    user.role = new_role
+    db.session.commit()
+    
+    return jsonify({'message': 'Role updated successfully'})
+
+@app.route('/user/<int:user_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    if current_user.role != 'admin':
+        flash('Access denied. Admin privileges required.')
+        return redirect(url_for('home'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        user.username = request.form.get('username')
+        user.email = request.form.get('email')
+        
+        if request.form.get('password'):
+            user.set_password(request.form.get('password'))
+            
+        db.session.commit()
+        flash('User updated successfully!')
+        return redirect(url_for('users'))
+    
+    return render_template('edit_user.html', user=user)
+
+@app.route('/user/<int:user_id>', methods=['DELETE'])
+@login_required
+def delete_user(user_id):
+    try:
+        if current_user.role != 'admin':
+            return jsonify({'error': 'Admin privileges required'}), 403
+            
+        print(f"\n=== Starting user deletion process for ID: {user_id} ===")
+        print(f"Current user role: {current_user.role}")
+        
+        user = User.query.get(user_id)
+        if not user:
+            print("User not found in database")
+            return jsonify({'error': 'User not found'}), 404
+            
+        print(f"Found user: {user.username} (ID: {user.id})")
+        print(f"Services count: {len(user.services)}")
+        print(f"Reviews count: {len(user.reviews)}")
+        
+        try:
+            # First, get all service IDs and review IDs to prevent lazy loading issues
+            service_ids = [service.id for service in user.services]
+            review_ids = [review.id for review in user.reviews]
+            
+            # Delete all associated reviews first to avoid integrity constraint issues
+            print("\nDeleting associated reviews...")
+            for review_id in review_ids:
+                review = Review.query.get(review_id)
+                if review:
+                    print(f"Deleting review (ID: {review.id})")
+                    db.session.delete(review)
+            
+            # Delete all associated services
+            print("\nDeleting associated services...")
+            for service_id in service_ids:
+                service = Service.query.get(service_id)
+                if service:
+                    print(f"Deleting service: {service.title} (ID: {service.id})")
+                    db.session.delete(service)
+            
+            # Delete the user
+            print("\nDeleting user...")
+            db.session.delete(user)
+            
+            # Commit the transaction
+            print("\nCommitting changes...")
+            db.session.commit()
+            print("\nUser deletion successful!")
+            return jsonify({'message': 'User deleted successfully'})
+            
+        except Exception as inner_e:
+            print(f"\nError during deletion process: {str(inner_e)}")
+            print(f"Type of error: {type(inner_e).__name__}")
+            db.session.rollback()
+            raise
+            
+    except Exception as e:
+        print(f"\n=== Final Error ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        import traceback
+        print("\nFull traceback:")
+        traceback.print_exc()
+        
+        return jsonify({
+            'error': f'Failed to delete user: {str(e)}',
+            'error_type': type(e).__name__
+        }), 500
 
 @app.route('/services')
 def services():
@@ -150,6 +279,28 @@ def service_detail(service_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists')
+            return redirect(url_for('register'))
+            
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered')
+            return redirect(url_for('register'))
+            
+        user = User(username=username, email=email, role='user')
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Registration successful!')
+        return redirect(url_for('login'))
+    
+    return render_template('register.html')
     if request.method == 'POST':
         username = request.form.get('username')
         email = request.form.get('email')
