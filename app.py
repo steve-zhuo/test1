@@ -3,6 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from google.oauth2 import id_token
+from google.auth.transport import requests
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -11,6 +14,11 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# Google OAuth configuration
+GOOGLE_CLIENT_ID = '663355566890-r9oqj6f0mkomqtuti0on0srgiu18l92a.apps.googleusercontent.com'
+GOOGLE_CLIENT_SECRET = 'your-google-client-secret-here'
+REDIRECT_URI = 'http://localhost:5000/auth/google/callback'
 
 # Models
 class User(UserMixin, db.Model):
@@ -180,6 +188,49 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('home'))
+
+@app.route('/auth/google', methods=['POST'])
+def google_callback():
+    try:
+        # Get the ID token from the request
+        data = request.get_json()
+        token = data.get('credential')
+        
+        # Verify the token
+        idinfo = id_token.verify_oauth2_token(
+            token,
+            requests.Request(),
+            GOOGLE_CLIENT_ID
+        )
+
+        # Get user info from token
+        email = idinfo['email']
+        name = idinfo.get('name', email.split('@')[0])
+        
+        # Check if user exists
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Create new user
+            user = User(username=name, email=email)
+            user.set_password(os.urandom(24).hex())  # Generate random password for security
+            db.session.add(user)
+            db.session.commit()
+        
+        # Login the user
+        login_user(user)
+        
+        return jsonify({
+            'success': True,
+            'redirect_url': url_for('home')
+        })
+        
+    except Exception as e:
+        # Handle other errors
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
 
 @app.route('/add_service', methods=['GET', 'POST'])
 @login_required

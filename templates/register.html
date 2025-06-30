@@ -8,6 +8,22 @@
         <div class="card">
             <div class="card-body">
                 <h2 class="card-title text-center">Register</h2>
+                <div class="text-center mb-4">
+                    <div class="d-flex justify-content-center gap-3">
+                        <div id="google-signin"></div>
+                        <!-- Alternative button for non-JS environments -->
+                        <button class="btn btn-outline-primary d-none" onclick="handleGoogleSignIn()">
+                            <i class="fab fa-google me-2"></i>Sign up with Google
+                        </button>
+                        <button class="btn btn-outline-primary" onclick="handleFacebookSignIn()">
+                            <i class="fab fa-facebook-f me-2"></i>Sign up with Facebook
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center mb-4">
+                    <hr class="w-50 mx-auto">
+                    <p class="mb-0">or</p>
+                </div>
                 <form method="POST" action="{{ url_for('register') }}">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
@@ -30,4 +46,134 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Google Sign-In configuration
+    window.onload = function() {
+        // Load the Google Identity Services library
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.defer = true;
+        script.onload = function() {
+            // Initialize Google Sign-In
+            google.accounts.id.initialize({
+                client_id: "663355566890-r9oqj6f0mkomqtuti0on0srgiu18l92a.apps.googleusercontent.com",
+                callback: handleGoogleResponse
+            });
+            
+            // Render the button
+            google.accounts.id.renderButton(
+                document.getElementById("google-signin"),
+                { 
+                    theme: "outline", 
+                    size: "large",
+                    type: "standard"
+                }
+            );
+        }
+        document.body.appendChild(script);
+    }
+
+    // Handle Google Sign-In
+    function handleGoogleSignIn() {
+        google.accounts.id.prompt();
+    }
+
+    // Handle Google Sign-In Response
+    function handleGoogleResponse(response) {
+        // Send the credential to the backend
+        fetch('/auth/google', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({credential: response.credential})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Authentication failed: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during authentication');
+        });
+    }
+
+    // Initialize Facebook SDK
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId: 'YOUR_FACEBOOK_APP_ID',
+            cookie: true,
+            xfbml: true,
+            version: 'v15.0'
+        });
+    };
+
+    // Load Facebook SDK
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/en_US/sdk.js';
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    // Handle Facebook Sign-In
+    function handleFacebookSignIn() {
+        FB.login(function(response) {
+            if (response.authResponse) {
+                FB.api('/me', {fields: 'id,first_name,last_name,email'}, function(response) {
+                    // Send Facebook user data to your backend
+                    fetch('/auth/facebook', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(response)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/';
+                        }
+                    });
+                });
+            }
+        }, {scope: 'email'});
+    }
+
+    // Handle Google Sign-In Response
+    function handleGoogleResponse(response) {
+        // Send Google token to your backend
+        fetch('/auth/google', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({credential: response.credential})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = '/';
+            }
+        });
+    }
+
+    // Load Facebook SDK
+    (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/en_US/sdk.js';
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
 {% endblock %}
