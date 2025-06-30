@@ -76,6 +76,11 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h6 class="mb-0">{{ review.author.username }}</h6>
                                     <div class="review-stars">
+                                        {% if current_user.role == 'admin' %}
+                                        <button class="btn btn-sm btn-danger ms-2 delete-review-btn" data-review-id="{{ review.id }}" title="Delete Review">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
                                         {% for i in range(1,6) %}
                                         <i class="fas fa-star star-rating {% if i <= review.rating %}selected{% endif %}"></i>
                                         {% endfor %}
@@ -123,54 +128,82 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('JavaScript is working');
-    
-    // Star rating functionality
-    const starContainers = document.querySelectorAll('.review-stars');
-    
-    starContainers.forEach(container => {
-        const stars = container.querySelectorAll('i');
-        const hiddenInput = container.querySelector('input[type="hidden"]');
+    console.log('Service detail page scripts loaded');
+
+    // Initialize page when DOM is ready
+    $(document).ready(function() {
+        // Initialize review delete functionality
+        $('.delete-review-btn').on('click', function(e) {
+            e.preventDefault();
+            const reviewId = $(this).data('review-id');
+            console.log('Delete button clicked for review:', reviewId);
+            
+            if (confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+                $.ajax({
+                    url: '/review/' + reviewId,
+                    method: 'DELETE',
+                    success: function(response) {
+                        console.log('Review deleted successfully:', response);
+                        alert('Review deleted successfully!');
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error deleting review:', error);
+                        alert('Error deleting review: ' + error);
+                    }
+                });
+            }
+        });
+
+        // Initialize star rating functionality
+        console.log('Initializing star rating functionality');
+        const starContainers = document.querySelectorAll('.review-stars');
         
-        stars.forEach((star, index) => {
-            star.addEventListener('click', function() {
-                const rating = index + 1;
-                hiddenInput.value = rating;
-                updateStars(stars, rating);
-            });
+        starContainers.forEach(container => {
+            const stars = container.querySelectorAll('i');
+            const hiddenInput = container.querySelector('input[type="hidden"]');
             
-            star.addEventListener('mouseover', function() {
-                const rating = index + 1;
-                updateStars(stars, rating);
-            });
-            
-            star.addEventListener('mouseout', function() {
-                updateStars(stars, parseInt(hiddenInput.value));
+            stars.forEach((star, index) => {
+                star.dataset.index = index;
+                star.addEventListener('click', function() {
+                    const rating = index + 1;
+                    hiddenInput.value = rating;
+                    updateStars(stars, rating);
+                });
+                
+                star.addEventListener('mouseover', function() {
+                    const rating = index + 1;
+                    updateStars(stars, rating);
+                });
+                
+                star.addEventListener('mouseout', function() {
+                    updateStars(stars, parseInt(hiddenInput.value));
+                });
             });
         });
-    });
 
-    // Review form toggle functionality
-    const toggleButtons = document.querySelectorAll('.toggle-review-form');
-    const cancelButtons = document.querySelectorAll('.cancel-review');
-    const formContainers = document.querySelectorAll('.review-form-container');
+        // Review form toggle functionality
+        console.log('Initializing review form toggle functionality');
+        const toggleButtons = document.querySelectorAll('.toggle-review-form');
+        const cancelButtons = document.querySelectorAll('.cancel-review');
+        const formContainers = document.querySelectorAll('.review-form-container');
 
-    toggleButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const serviceId = this.dataset.serviceId;
-            const formContainer = this.closest('.review-form-container').querySelector('.review-form');
-            formContainer.style.display = 'block';
-            this.style.display = 'none';
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const serviceId = this.dataset.serviceId;
+                const formContainer = this.closest('.review-form-container').querySelector('.review-form');
+                formContainer.style.display = 'block';
+                this.style.display = 'none';
+            });
         });
-    });
 
-    cancelButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const formContainer = this.closest('.review-form');
-            const toggleButton = formContainer.closest('.review-form-container').querySelector('.toggle-review-form');
-            formContainer.style.display = 'none';
-            toggleButton.style.display = 'block';
+        cancelButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const formContainer = this.closest('.review-form');
+                const toggleButton = formContainer.closest('.review-form-container').querySelector('.toggle-review-form');
+                formContainer.style.display = 'none';
+                toggleButton.style.display = 'block';
+            });
         });
     });
 
@@ -183,6 +216,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-});
 </script>
 {% endblock %}

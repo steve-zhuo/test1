@@ -141,6 +141,24 @@ def edit_user(user_id):
     
     return render_template('edit_user.html', user=user)
 
+@app.route('/review/<int:review_id>', methods=['DELETE'])
+@login_required
+def delete_review(review_id):
+    if current_user.role != 'admin':
+        return jsonify({'error': 'Admin privileges required'}), 403
+    
+    review = Review.query.get(review_id)
+    if not review:
+        return jsonify({'error': 'Review not found'}), 404
+    
+    try:
+        db.session.delete(review)
+        db.session.commit()
+        return jsonify({'message': 'Review deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/user/<int:user_id>', methods=['DELETE'])
 @login_required
 def delete_user(user_id):
