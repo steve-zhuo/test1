@@ -77,7 +77,7 @@ def home():
     services = Service.query.order_by(Service.created_at.desc()).limit(10).all()
     
     # Get recent reviews
-    recent_reviews = Review.query.order_by(Review.created_at.desc()).limit(10).all()
+    recent_reviews = Review.query.order_by(Review.created_at.desc()).limit(20).all()
     
     return render_template('index.html', 
                          services=services,
