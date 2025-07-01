@@ -52,6 +52,13 @@ class Service(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     reviews = db.relationship('Review', backref='service', lazy=True, cascade='all, delete-orphan')
 
+    @property
+    def average_rating(self):
+        if not self.reviews:
+            return 0
+        total_rating = sum(review.rating for review in self.reviews)
+        return total_rating / len(self.reviews)
+
 class Review(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)

@@ -96,6 +96,22 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">{{ service.title }}</h5>
+                        <div class="rating-section mb-2">
+                            <div class="d-flex align-items-center">
+                                <div class="review-stars">
+                                    {% for i in range(5) %}
+                                        {% if i < service.average_rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div class="rating-number ms-2">
+                                    <small class="text-muted">{{ "%.1f"|format(service.average_rating) }}/5</small>
+                                </div>
+                            </div>
+                        </div>
                         <p class="card-text">{{ service.description }}</p>
                         <p class="card-text"><small class="text-muted">Category: {{ service.category }}</small></p>
                         <p class="card-text"><small class="text-muted">Posted by {{ service.provider.username }}</small></p>
